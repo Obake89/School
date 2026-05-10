@@ -340,31 +340,58 @@ body::before{
 
 <div class="container">
 
-    <!-- START -->
-    <div id="startScreen" class="start-screen">
+   <!-- START -->
+<div id="startScreen" class="start-screen">
 
-        <div class="logo">QUIZ</div>
+    <div class="logo">QUIZ</div>
 
-        <div class="subtitle">
-            Odpowiedz poprawnie na minimum 80% pytań
-        </div>
+    <div class="subtitle">
+        Do zaliczenia wymagane jest minimum 80%
+    </div>
 
-        <div class="input-wrapper">
-            <input
-                type="text"
-                id="studentName"
-                placeholder="Wpisz swoje imię..."
-            />
-        </div>
+    <div class="input-wrapper">
+        <input
+            type="text"
+            id="studentName"
+            placeholder="Wpisz swoje imię..."
+        />
+    </div>
 
-        <button
-            id="startBtn"
-            class="main-btn"
+    <div style="margin-top:20px;">
+
+        <label style="display:block;margin-bottom:10px;color:#cbd5e1;">
+            Ilość pytań:
+        </label>
+
+        <select
+            id="questionsAmount"
+            style="
+                width:100%;
+                padding:18px;
+                border-radius:18px;
+                background:rgba(255,255,255,0.05);
+                border:1px solid rgba(255,255,255,0.08);
+                color:white;
+                font-size:18px;
+                outline:none;
+            "
         >
-            Rozpocznij Quiz
-        </button>
+            <option value="10">10 pytań</option>
+            <option value="15">15 pytań</option>
+            <option value="25" selected>25 pytań</option>
+            <option value="50">50 pytań</option>
+        </select>
 
     </div>
+
+    <button
+        id="startBtn"
+        class="main-btn"
+    >
+        Rozpocznij Quiz
+    </button>
+
+</div>
 
     <!-- LOADING -->
     <div id="loading" class="loading" style="display:none;">
@@ -461,7 +488,7 @@ const GOOGLE_SHEET_CSV_URL =
 const GOOGLE_SCRIPT_URL =
 "https://script.google.com/macros/s/AKfycby7eaBcSkdJO4CKC_5ymDblsnOmW-VuOin0dszXWKFxlgJJtiES9IBvNfkIfbiNHxS0/exec";
 
-const QUESTIONS_TO_DRAW = 25;
+let QUESTIONS_TO_DRAW = 25;
 const PASS_PERCENTAGE = 80;
 
 let allQuestions = [];
@@ -532,6 +559,11 @@ async function startQuiz(){
     studentName =
     input.value.trim();
 
+    QUESTIONS_TO_DRAW =
+    parseInt(
+        document.getElementById("questionsAmount").value
+    );
+
     if(studentName.length < 2){
 
         alert("Podaj imię.");
@@ -570,23 +602,34 @@ async function loadQuestions(){
             const cols =
             parseCSVRow(row);
 
-            return {
+           
+            const answersCount =
+                parseInt(cols[1]);
 
-                question: cols[0],
+                const answers = [];
 
-                answers: [
-                    cols[1],
-                    cols[2],
-                    cols[3],
-                    cols[4]
-                ],
+                for(let i = 0; i < answersCount; i++){
 
-                correct:
-                parseInt(cols[5]),
+                    answers.push(cols[i + 2]);
 
-                image: cols[6]
+                }
 
-            };
+                return {
+
+                    question: cols[0],
+
+                    answers: answers,
+
+                    correct:
+                    parseInt(cols[8]),
+
+                    image: cols[9]
+
+                };
+
+
+
+
 
         }).filter(q => q.question);
 
@@ -700,7 +743,7 @@ function showQuestion(){
     }
 
     // ANSWERS
-    const letters = ["A","B","C","D"];
+    const letters =["A","B","C","D","E","F"];
 
     q.answers.forEach((answer, index) => {
 
