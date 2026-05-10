@@ -596,75 +596,52 @@ LOAD QUESTIONS
 */
 
 async function loadQuestions(){
-
     try{
+        const response = await fetch(GOOGLE_SHEET_CSV_URL);
+        const csvText = await response.text();
 
-        const response =
-        await fetch(GOOGLE_SHEET_CSV_URL);
-
-        const csvText =
-        await response.text();
-
-        const rows =
-        csvText.split("\n").slice(1);
+        // POPRAWKA 1: Lepsze dzielenie linii (obsługuje \r\n) i usuwanie pustych wierszy
+        const rows = csvText.split(/\r?\n/).slice(1).filter(row => row.trim() !== "");
 
         allQuestions = rows.map(row => {
+            const cols = parseCSVRow(row);
+            
+            // Kolumna 0: Pytanie
+            // Kolumna 1: Ilość odpowiedzi
+            const answersCount = parseInt(cols[1].trim());
 
-            const cols =
-            parseCSVRow(row);
-
-           
-            const answersCount =
-            parseInt(cols[1]);
+            if (isNaN(answersCount)) return null; // Zabezpieczenie przed błędnym wierszem
 
             const answers = [];
-
             for(let i = 0; i < answersCount; i++){
-
                 answers.push(cols[i + 2]);
-
             }
 
-            // indeks poprawnej odpowiedzi
-            const correctIndex =
-            2 + answersCount;
+            // POPRAWKA 2: Dodane .trim() przy parsowaniu indeksu poprawnej odpowiedzi
+            const correctIndexValue = cols[2 + answersCount] ? cols[2 + answersCount].trim() : "";
+            const correctIndex = parseInt(correctIndexValue);
 
-            // indeks obrazka
-            const imageIndex =
-            3 + answersCount;
+            // Indeks obrazka
+            const imageIndex = 3 + answersCount;
 
             return {
-
                 question: cols[0],
-
                 answers: answers,
-
-                correct:
-                parseInt(cols[correctIndex]),
-
-                image:
-                cols[imageIndex]
-
+                correct: correctIndex,
+                image: cols[imageIndex]
             };
+        }).filter(q => q !== null && q.question);
 
-
-
-
-
-        }).filter(q => q.question);
+        if (allQuestions.length === 0) {
+            throw new Error("Brak pytań w arkuszu.");
+        }
 
         shuffleArray(allQuestions);
+        quizQuestions = allQuestions.slice(0, QUESTIONS_TO_DRAW);
 
-        quizQuestions =
-        allQuestions.slice(0, QUESTIONS_TO_DRAW);
-        console.log(quizQuestions);
-
-        // LOSOWANIE ODPOWIEDZI
-        quizQuestions =
-        quizQuestions.map(q => {
-
-            const answers =
-            q.answers.map((answer, index) => ({
+        // LOSOWANIE KOLEJNOŚCI ODPOWIEDZI
+        quizQuestions = quizQuestions.map(q => {
+            const answers = q.answers.map((answer, index) => ({
                 text: answer,
                 originalIndex: index + 1
             }));
@@ -672,36 +649,21 @@ async function loadQuestions(){
             shuffleArray(answers);
 
             return {
-
                 question: q.question,
-
                 answers: answers,
-
-                correct:
-                answers.findIndex(a =>
-                    a.originalIndex === q.correct
-                ) + 1,
-
+                correct: answers.findIndex(a => a.originalIndex === q.correct) + 1,
                 image: q.image
-
             };
-
         });
 
         loadingEl.style.display = "none";
         quizEl.style.display = "block";
-
         showQuestion();
 
-    }catch(error){
-
-        loadingEl.innerHTML =
-        "Błąd ładowania pytań.";
-
-        console.error(error);
-
+    } catch(error){
+        loadingEl.innerHTML = "Błąd ładowania pytań. Sprawdź konsolę (F12).";
+        console.error("Szczegóły błędu:", error);
     }
-
 }
 
 /*
