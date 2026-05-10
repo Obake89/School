@@ -543,9 +543,6 @@ document.getElementById("nextBtn");
 const questionCounter =
 document.getElementById("questionCounter");
 
-const scoreCounter =
-document.getElementById("scoreCounter");
-
 const questionImage =
 document.getElementById("questionImage");
 
@@ -618,28 +615,37 @@ async function loadQuestions(){
 
            
             const answersCount =
-                parseInt(cols[1]);
+            parseInt(cols[1]);
 
-                const answers = [];
+            const answers = [];
 
-                for(let i = 0; i < answersCount; i++){
+            for(let i = 0; i < answersCount; i++){
 
-                    answers.push(cols[i + 2]);
+                answers.push(cols[i + 2]);
 
-                }
+            }
 
-                return {
+            // indeks poprawnej odpowiedzi
+            const correctIndex =
+            2 + answersCount;
 
-                    question: cols[0],
+            // indeks obrazka
+            const imageIndex =
+            3 + answersCount;
 
-                    answers: answers,
+            return {
 
-                    correct:
-                    parseInt(cols[8]),
+                question: cols[0],
 
-                    image: cols[9]
+                answers: answers,
 
-                };
+                correct:
+                parseInt(cols[correctIndex]),
+
+                image:
+                cols[imageIndex]
+
+            };
 
 
 
@@ -714,9 +720,6 @@ function showQuestion(){
 
     questionCounter.textContent =
     `${currentQuestionIndex + 1}/${quizQuestions.length}`;
-
-    scoreCounter.textContent =
-    `${score} pkt`;
 
     studentInfo.textContent =
     studentName;
@@ -1059,7 +1062,7 @@ function shuffleArray(array){
                     const imageSrc =
                     mistake.image.startsWith("http")
                     ? mistake.image
-                    : "images/" + mistake.image;
+                    : "Images/" + mistake.image;
 
                     imageHtml = `
                         <img
