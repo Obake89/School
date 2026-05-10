@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Quiz</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins', sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:
+    radial-gradient(circle at top left, #3b82f6 0%, transparent 30%),
+    radial-gradient(circle at bottom right, #8b5cf6 0%, transparent 30%),
+    linear-gradient(135deg,#020617,#0f172a,#111827);
+    overflow-x:hidden;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:25px;
+}
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none;
+}
+
+.container{
+    width:100%;
+    max-width:950px;
+    background:rgba(15,23,42,0.72);
+    backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:32px;
+    padding:40px;
+    box-shadow:
+    0 0 40px rgba(59,130,246,0.15),
+    0 0 80px rgba(139,92,246,0.08);
+    position:relative;
+    overflow:hidden;
+}
+
+.container::before{
+    content:"";
+    position:absolute;
+    width:300px;
+    height:300px;
+    background:#3b82f6;
+    filter:blur(140px);
+    opacity:0.15;
+    top:-120px;
+    left:-120px;
+}
+
+.container::after{
+    content:"";
+    position:absolute;
+    width:300px;
+    height:300px;
+    background:#8b5cf6;
+    filter:blur(140px);
+    opacity:0.12;
+    bottom:-120px;
+    right:-120px;
+}
+
+.logo{
+    font-size:48px;
+    font-weight:700;
+    text-align:center;
+    margin-bottom:10px;
+    background:linear-gradient(to right,#60a5fa,#a78bfa);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.subtitle{
+    text-align:center;
+    color:#cbd5e1;
+    margin-bottom:35px;
+    font-size:18px;
+}
+
+.start-screen{
+    position:relative;
+    z-index:2;
+}
+
+.input-wrapper{
+    position:relative;
+}
+
+.input-wrapper input{
+    width:100%;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    color:white;
+    padding:20px;
+    border-radius:18px;
+    font-size:18px;
+    outline:none;
+    transition:0.2s;
+}
+
+.input-wrapper input:focus{
+    border-color:#3b82f6;
+    box-shadow:0 0 0 4px rgba(59,130,246,0.2);
+}
+
+.input-wrapper input::placeholder{
+    color:#94a3b8;
+}
+
+.main-btn{
+    width:100%;
+    border:none;
+    margin-top:20px;
+    padding:18px;
+    border-radius:18px;
+    font-size:18px;
+    font-weight:600;
+    cursor:pointer;
+    color:white;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    transition:0.25s;
+    box-shadow:0 10px 25px rgba(59,130,246,0.25);
+}
+
+.main-btn:hover{
+    transform:translateY(-2px) scale(1.01);
+}
+
+.loading{
+    text-align:center;
+    font-size:24px;
+    padding:60px;
+}
+
+.top-bar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:15px;
+    justify-content:space-between;
+    margin-bottom:25px;
+    position:relative;
+    z-index:2;
+}
+
+.info-card{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.06);
+    padding:14px 18px;
+    border-radius:18px;
+    min-width:140px;
+    backdrop-filter:blur(10px);
+}
+
+.info-label{
+    font-size:13px;
+    color:#94a3b8;
+    margin-bottom:4px;
+}
+
+.info-value{
+    font-size:18px;
+    font-weight:600;
+}
+
+.progress-wrapper{
+    width:100%;
+    height:12px;
+    background:rgba(255,255,255,0.08);
+    border-radius:999px;
+    overflow:hidden;
+    margin-bottom:35px;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:linear-gradient(to right,#3b82f6,#8b5cf6);
+    border-radius:999px;
+    transition:0.3s;
+}
+
+.question-image{
+    width:100%;
+    max-height:360px;
+    object-fit:contain;
+    border-radius:24px;
+    margin-bottom:28px;
+    background:#020617;
+    border:1px solid rgba(255,255,255,0.05);
+}
+
+.question{
+    font-size:30px;
+    line-height:1.45;
+    margin-bottom:28px;
+    font-weight:600;
+    position:relative;
+    z-index:2;
+}
+
+.answers{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:18px;
+}
+
+.answer-btn{
+    position:relative;
+    overflow:hidden;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:22px;
+    padding:22px;
+    cursor:pointer;
+    transition:0.25s;
+    color:white;
+    text-align:left;
+    font-size:18px;
+    font-weight:500;
+}
+
+.answer-btn:hover{
+    transform:translateY(-2px);
+    border-color:rgba(96,165,250,0.5);
+    background:rgba(59,130,246,0.12);
+}
+
+.answer-btn.selected{
+    background:linear-gradient(
+        135deg,
+        rgba(37,99,235,0.7),
+        rgba(124,58,237,0.7)
+    );
+    border-color:#60a5fa;
+    box-shadow:0 0 20px rgba(59,130,246,0.25);
+}
+
+.answer-letter{
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    margin-right:14px;
+    background:rgba(255,255,255,0.08);
+    font-weight:700;
+}
+
+.next-btn{
+    display:none;
+}
+
+.result{
+    text-align:center;
+    position:relative;
+    z-index:2;
+}
+
+.result h2{
+    font-size:48px;
+    margin-bottom:20px;
+}
+
+.result-score{
+    font-size:80px;
+    font-weight:700;
+    margin-bottom:10px;
+    background:linear-gradient(to right,#60a5fa,#a78bfa);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.result p{
+    font-size:22px;
+    margin-bottom:10px;
+    color:#cbd5e1;
+}
+
+.pass{
+    color:#22c55e !important;
+    font-weight:700;
+}
+
+.fail{
+    color:#ef4444 !important;
+    font-weight:700;
+}
+
+@media(max-width:768px){
+
+    .container{
+        padding:25px;
+        border-radius:24px;
+    }
+
+    .logo{
+        font-size:38px;
+    }
+
+    .question{
+        font-size:24px;
+    }
+
+    .answer-btn{
+        padding:18px;
+        font-size:16px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- START -->
+    <div id="startScreen" class="start-screen">
+
+        <div class="logo">QUIZ</div>
+
+        <div class="subtitle">
+            Odpowiedz poprawnie na minimum 80% pytań
+        </div>
+
+        <div class="input-wrapper">
+            <input
+                type="text"
+                id="studentName"
+                placeholder="Wpisz swoje imię..."
+            />
+        </div>
+
+        <button
+            id="startBtn"
+            class="main-btn"
+        >
+            Rozpocznij Quiz
+        </button>
+
+    </div>
+
+    <!-- LOADING -->
+    <div id="loading" class="loading" style="display:none;">
+        Ładowanie pytań...
+    </div>
+
+    <!-- QUIZ -->
+    <div id="quiz" style="display:none;">
+
+        <div class="top-bar">
+
+            <div class="info-card">
+                <div class="info-label">Pytanie</div>
+                <div class="info-value" id="questionCounter"></div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label">Wynik</div>
+                <div class="info-value" id="scoreCounter"></div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label">Uczeń</div>
+                <div class="info-value" id="studentInfo"></div>
+            </div>
+
+        </div>
+
+        <div class="progress-wrapper">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <img
+            id="questionImage"
+            class="question-image"
+            style="display:none;"
+        />
+
+        <div
+            id="questionText"
+            class="question"
+        ></div>
+
+        <div
+            id="answersContainer"
+            class="answers"
+        ></div>
+
+        <button
+            id="nextBtn"
+            class="main-btn next-btn"
+        >
+            Następne pytanie
+        </button>
+
+    </div>
+
+    <!-- RESULT -->
+    <div id="resultScreen" class="result" style="display:none;">
+
+        <h2>Quiz zakończony</h2>
+
+        <div
+            class="result-score"
+            id="percentage"
+        ></div>
+
+        <p id="finalScore"></p>
+
+        <p id="passFail"></p>
+
+        <button
+            class="main-btn"
+            onclick="location.reload()"
+        >
+            Rozpocznij ponownie
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+/*
+======================================================
+TUTAJ WKLEJ LINKI
+======================================================
+*/
+
+const GOOGLE_SHEET_CSV_URL =
+"TUTAJ_LINK_CSV";
+
+const GOOGLE_SCRIPT_URL =
+"TUTAJ_LINK_WEBAPP";
+
+const QUESTIONS_TO_DRAW = 25;
+const PASS_PERCENTAGE = 80;
+
+let allQuestions = [];
+let quizQuestions = [];
+
+let currentQuestionIndex = 0;
+let score = 0;
+let selectedAnswer = null;
+let studentName = "";
+
+/*
+======================================================
+ELEMENTY
+======================================================
+*/
+
+const startScreen =
+document.getElementById("startScreen");
+
+const loadingEl =
+document.getElementById("loading");
+
+const quizEl =
+document.getElementById("quiz");
+
+const resultEl =
+document.getElementById("resultScreen");
+
+const questionText =
+document.getElementById("questionText");
+
+const answersContainer =
+document.getElementById("answersContainer");
+
+const nextBtn =
+document.getElementById("nextBtn");
+
+const questionCounter =
+document.getElementById("questionCounter");
+
+const scoreCounter =
+document.getElementById("scoreCounter");
+
+const questionImage =
+document.getElementById("questionImage");
+
+const studentInfo =
+document.getElementById("studentInfo");
+
+const progressBar =
+document.getElementById("progressBar");
+
+/*
+======================================================
+START
+======================================================
+*/
+
+document
+.getElementById("startBtn")
+.addEventListener("click", startQuiz);
+
+async function startQuiz(){
+
+    const input =
+    document.getElementById("studentName");
+
+    studentName =
+    input.value.trim();
+
+    if(studentName.length < 2){
+
+        alert("Podaj imię.");
+        return;
+
+    }
+
+    startScreen.style.display = "none";
+    loadingEl.style.display = "block";
+
+    await loadQuestions();
+
+}
+
+/*
+======================================================
+LOAD QUESTIONS
+======================================================
+*/
+
+async function loadQuestions(){
+
+    try{
+
+        const response =
+        await fetch(GOOGLE_SHEET_CSV_URL);
+
+        const csvText =
+        await response.text();
+
+        const rows =
+        csvText.split("\n").slice(1);
+
+        allQuestions = rows.map(row => {
+
+            const cols =
+            parseCSVRow(row);
+
+            return {
+
+                question: cols[0],
+
+                answers: [
+                    cols[1],
+                    cols[2],
+                    cols[3],
+                    cols[4]
+                ],
+
+                correct:
+                parseInt(cols[5]),
+
+                image: cols[6]
+
+            };
+
+        }).filter(q => q.question);
+
+        shuffleArray(allQuestions);
+
+        quizQuestions =
+        allQuestions.slice(0, QUESTIONS_TO_DRAW);
+
+        // LOSOWANIE ODPOWIEDZI
+        quizQuestions =
+        quizQuestions.map(q => {
+
+            const answers =
+            q.answers.map((answer, index) => ({
+                text: answer,
+                originalIndex: index + 1
+            }));
+
+            shuffleArray(answers);
+
+            return {
+
+                question: q.question,
+
+                answers: answers,
+
+                correct:
+                answers.findIndex(a =>
+                    a.originalIndex === q.correct
+                ) + 1,
+
+                image: q.image
+
+            };
+
+        });
+
+        loadingEl.style.display = "none";
+        quizEl.style.display = "block";
+
+        showQuestion();
+
+    }catch(error){
+
+        loadingEl.innerHTML =
+        "Błąd ładowania pytań.";
+
+        console.error(error);
+
+    }
+
+}
+
+/*
+======================================================
+SHOW QUESTION
+======================================================
+*/
+
+function showQuestion(){
+
+    selectedAnswer = null;
+
+    nextBtn.style.display = "none";
+
+    const q =
+    quizQuestions[currentQuestionIndex];
+
+    questionCounter.textContent =
+    `${currentQuestionIndex + 1}/${quizQuestions.length}`;
+
+    scoreCounter.textContent =
+    `${score} pkt`;
+
+    studentInfo.textContent =
+    studentName;
+
+    // progress
+    const progress =
+    ((currentQuestionIndex)
+    / quizQuestions.length) * 100;
+
+    progressBar.style.width =
+    `${progress}%`;
+
+    questionText.textContent =
+    q.question;
+
+    answersContainer.innerHTML = "";
+
+    // IMAGE
+    if(q.image){
+
+        if(q.image.startsWith("http")){
+
+            questionImage.src = q.image;
+
+        }else{
+
+            questionImage.src =
+            "images/" + q.image;
+
+        }
+
+        questionImage.style.display = "block";
+
+    }else{
+
+        questionImage.style.display = "none";
+
+    }
+
+    // ANSWERS
+    const letters = ["A","B","C","D"];
+
+    q.answers.forEach((answer, index) => {
+
+        const btn =
+        document.createElement("button");
+
+        btn.classList.add("answer-btn");
+
+        btn.innerHTML = `
+            <span class="answer-letter">
+                ${letters[index]}
+            </span>
+            ${answer.text}
+        `;
+
+        btn.addEventListener("click", () => {
+
+            document
+            .querySelectorAll(".answer-btn")
+            .forEach(b =>
+                b.classList.remove("selected")
+            );
+
+            btn.classList.add("selected");
+
+            selectedAnswer = index + 1;
+
+            nextBtn.style.display = "block";
+
+        });
+
+        answersContainer.appendChild(btn);
+
+    });
+
+}
+
+/*
+======================================================
+NEXT
+======================================================
+*/
+
+nextBtn.addEventListener("click", () => {
+
+    if(selectedAnswer === null) return;
+
+    const currentQuestion =
+    quizQuestions[currentQuestionIndex];
+
+    if(selectedAnswer === currentQuestion.correct){
+
+        score++;
+
+    }
+
+    currentQuestionIndex++;
+
+    if(currentQuestionIndex >= quizQuestions.length){
+
+        showResults();
+
+    }else{
+
+        showQuestion();
+
+    }
+
+});
+
+/*
+======================================================
+RESULTS
+======================================================
+*/
+
+async function showResults(){
+
+    quizEl.style.display = "none";
+    resultEl.style.display = "block";
+
+    const percent =
+    Math.round(
+        (score / quizQuestions.length) * 100
+    );
+
+    document
+    .getElementById("percentage")
+    .textContent =
+    `${percent}%`;
+
+    document
+    .getElementById("finalScore")
+    .textContent =
+    `Wynik: ${score}/${quizQuestions.length}`;
+
+    const passed =
+    percent >= PASS_PERCENTAGE;
+
+    const passFail =
+    document.getElementById("passFail");
+
+    if(passed){
+
+        passFail.textContent =
+        "ZALICZONE";
+
+        passFail.className =
+        "pass";
+
+    }else{
+
+        passFail.textContent =
+        "NIEZALICZONE";
+
+        passFail.className =
+        "fail";
+
+    }
+
+    saveResult(
+        studentName,
+        score,
+        percent,
+        passed
+    );
+
+}
+
+/*
+======================================================
+SAVE RESULT
+======================================================
+*/
+
+async function saveResult(
+    name,
+    score,
+    percent,
+    passed
+){
+
+    try{
+
+        await fetch(GOOGLE_SCRIPT_URL, {
+
+            method:"POST",
+
+            body: JSON.stringify({
+
+                name: name,
+
+                score: score,
+
+                percentage: percent,
+
+                passed:
+                passed ? "TAK" : "NIE",
+
+                date:
+                new Date().toLocaleString()
+
+            })
+
+        });
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+}
+
+/*
+======================================================
+CSV
+======================================================
+*/
+
+function parseCSVRow(row){
+
+    const result = [];
+
+    let current = '';
+
+    let insideQuotes = false;
+
+    for(let i = 0; i < row.length; i++){
+
+        const char = row[i];
+
+        if(char === '"'){
+
+            insideQuotes = !insideQuotes;
+
+        }
+        else if(char === ',' && !insideQuotes){
+
+            result.push(current);
+
+            current = '';
+
+        }
+        else{
+
+            current += char;
+
+        }
+
+    }
+
+    result.push(current);
+
+    return result.map(v => v.trim());
+
+}
+
+/*
+======================================================
+SHUFFLE
+======================================================
+*/
+
+function shuffleArray(array){
+
+    for(let i = array.length - 1; i > 0; i--){
+
+        const j =
+        Math.floor(Math.random() * (i + 1));
+
+        [array[i], array[j]] =
+        [array[j], array[i]];
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
