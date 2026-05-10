@@ -804,50 +804,65 @@ NEXT
 ======================================================
 */
 
-nextBtn.addEventListener("click", () => {
+        nextBtn.addEventListener("click", () => {
 
-    if(selectedAnswer === null) return;
+            if(selectedAnswer === null) return;
 
-    const currentQuestion =
-    quizQuestions[currentQuestionIndex];
+            const currentQuestion =
+            quizQuestions[currentQuestionIndex];
 
-   if(selectedAnswer === currentQuestion.correct){
+            const selectedObj =
+            currentQuestion.answers[selectedAnswer - 1];
 
-    score++;
+            const correctObj =
+            currentQuestion.answers[currentQuestion.correct - 1];
 
-    }else{
+            // zabezpieczenie przed błędami
+            if(!selectedObj || !correctObj){
 
-        mistakes.push({
+                console.error("Błąd odpowiedzi:", currentQuestion);
+                alert("Wystąpił błąd w pytaniu. Sprawdź dane w arkuszu.");
+                return;
 
-            question:
-            currentQuestion.question,
+            }
 
-            selected:
-            currentQuestion.answers[selectedAnswer - 1].text,
+            if(selectedAnswer === currentQuestion.correct){
 
-            correct:
-            currentQuestion.answers[currentQuestion.correct - 1].text,
+                score++;
 
-            image:
-            currentQuestion.image
+            }else{
+
+                mistakes.push({
+
+                    question:
+                    currentQuestion.question,
+
+                    selected:
+                    selectedObj.text,
+
+                    correct:
+                    correctObj.text,
+
+                    image:
+                    currentQuestion.image
+
+                });
+
+            }
+
+            currentQuestionIndex++;
+
+            if(currentQuestionIndex >= quizQuestions.length){
+
+                showResults();
+
+            }else{
+
+                showQuestion();
+
+            }
 
         });
-
-    }
-
-    currentQuestionIndex++;
-
-    if(currentQuestionIndex >= quizQuestions.length){
-
-        showResults();
-
-    }else{
-
-        showQuestion();
-
-    }
-
-});
 
 /*
 ======================================================
