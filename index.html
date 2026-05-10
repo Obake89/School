@@ -603,34 +603,33 @@ async function loadQuestions(){
         // POPRAWKA 1: Lepsze dzielenie linii (obsługuje \r\n) i usuwanie pustych wierszy
         const rows = csvText.split(/\r?\n/).slice(1).filter(row => row.trim() !== "");
 
-        allQuestions = rows.map(row => {
+       allQuestions = rows.map(row => {
             const cols = parseCSVRow(row);
-            
-            // Kolumna 0: Pytanie
-            // Kolumna 1: Ilość odpowiedzi
-            const answersCount = parseInt(cols[1].trim());
+    
+            // 1. Liczba faktycznych odpowiedzi do wyświetlenia
+            const answersCount = parseInt(cols[1]);
+            if (isNaN(answersCount)) return null;
 
-            if (isNaN(answersCount)) return null; // Zabezpieczenie przed błędnym wierszem
-
+            // 2. Pobieramy tylko tyle odpowiedzi, ile zadeklarowano w kolumnie B
             const answers = [];
             for(let i = 0; i < answersCount; i++){
+                // Odpowiedzi zaczynają się od indeksu 2 (kolumna C)
                 answers.push(cols[i + 2]);
             }
 
-            // POPRAWKA 2: Dodane .trim() przy parsowaniu indeksu poprawnej odpowiedzi
-            const correctIndexValue = cols[2 + answersCount] ? cols[2 + answersCount].trim() : "";
-            const correctIndex = parseInt(correctIndexValue);
-
-            // Indeks obrazka
-            const imageIndex = 3 + answersCount;
+            // 3. STAŁE INDEKSY (bo zawsze masz 6 kolumn na odpowiedzi: C, D, E, F, G, H)
+            // Kolumna I (indeks 8) -> Numer poprawnej odpowiedzi
+            // Kolumna J (indeks 9) -> Obrazek
+            const correctIndex = parseInt(cols[8]); 
+            const imagePath = cols[9];
 
             return {
                 question: cols[0],
                 answers: answers,
                 correct: correctIndex,
-                image: cols[imageIndex]
+                image: imagePath
             };
-        }).filter(q => q !== null && q.question);
+        }).filter(q => q && q.question && !isNaN(q.correct));
 
         if (allQuestions.length === 0) {
             throw new Error("Brak pytań w arkuszu.");
